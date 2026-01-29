@@ -2,9 +2,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { connectToDatabase } from '@/lib/db';
+
 import { Paste } from '@/lib/models/Paste';
 import { generateSlug } from '@/lib/utils';
+import { connectDB } from '@/lib/db';
 
 const createPasteSchema = z.object({
   content: z.string().min(1, 'Content is required'),
@@ -15,7 +16,7 @@ const createPasteSchema = z.object({
 // Handle POST request - Create a new paste
 export async function POST(request: NextRequest) {
   try {
-    await connectToDatabase();
+    await connectDB();
     
     const body = await request.json();
     

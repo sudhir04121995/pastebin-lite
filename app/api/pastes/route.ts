@@ -1,113 +1,34 @@
+import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/db";
+import { Paste } from "@/lib/models/Paste";
+import { nanoid } from "nanoid";
 
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { connectToDatabase } from '@/lib/db';
-import { Paste } from '@/lib/models/Paste';
-import { generateSlug } from '@/lib/utils';
+export async function POST(req: Request) {
+  await connectDB();
 
-const createPasteSchema = z.object({
-  content: z.string().min(1, 'Content is required'),
-  ttl_seconds: z.number().int().min(1).optional(),
-  max_views: z.number().int().min(1).optional(),
-});
+  const body = await req.json();
+  const { content, ttl_seconds, max_views } = body;
 
-// Handle POST request - Create a new paste
-export async function POST(request: NextRequest) {
-  try {
-    await connectToDatabase();
-    
-    const body = await request.json();
-    
-    // Validate input
-    const validation = createPasteSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Invalid input', details: validation.error.issues},
-        { status: 400 }
-      );
-    }
-    
-    const { content, ttl_seconds, max_views } = validation.data;
-    
-    // Generate unique slug
-    const slug = generateSlug();
-    
-    // Calculate expiry date if TTL is provided
-    let expiresAt: Date | undefined;
-    if (ttl_seconds) {
-      const now = new Date();
-      // Handle test mode for deterministic expiry
-      if (process.env.TEST_MODE === '1') {
-        expiresAt = new Date(now.getTime() + ttl_seconds * 1000);
-      } else {
-        expiresAt = new Date(now.getTime() + ttl_seconds * 1000);
-      }
-    }
-    
-    // Create paste
-    const paste = await Paste.create({
-      content,
-      slug,
-      maxViews: max_views,
-      expiresAt,
-      views: 0,
-    });
-    
-    // Generate URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
-    const url = `${baseUrl}/p/${paste.slug}`;
-    
-    return NextResponse.json(
-      {
-        id: paste.slug,
-        url,
-      },
-      { status: 201 }
-    );
-    
-  } catch (error) {
-    console.error('Error creating paste:', error);
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.issues },
-        { status: 400 }
-      );
-    }
-    
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  if (!content) {
+    return NextResponse.json({ error: "Content required" }, { status: 400 });
   }
-}
 
-// Optional: Handle GET request to list pastes (if needed)
-export async function GET() {
-  return NextResponse.json(
-    { error: 'Method not implemented. Use POST to create a paste.' },
-    { status: 405 }
-  );
-}
+  const slug = nanoid(8);
 
-// Handle other methods
-export async function PUT() {
-  return NextResponse.json(
-    { error: 'Method not allowed' },
-    { status: 405 }
-  );
-}
+  let expiresAt;
+  if (ttl_seconds) {
+    expiresAt = new Date(Date.now() + ttl_seconds * 1000);
+  }
 
-export async function DELETE() {
-  return NextResponse.json(
-    { error: 'Method not allowed' },
-    { status: 405 }
-  );
-}
+  const paste = await Paste.create({
+    content,
+    slug,
+    maxViews: max_views,
+    expiresAt,
+  });
 
-export async function PATCH() {
-  return NextResponse.json(
-    { error: 'Method not allowed' },
-    { status: 405 }
-  );
+  return NextResponse.json({
+    id: paste.slug,
+    url: `${process.env.NEXT_PUBLIC_APP_URL}/p/${paste.slug}`,
+  });
 }
