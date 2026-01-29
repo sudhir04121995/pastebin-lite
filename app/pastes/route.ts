@@ -5,7 +5,8 @@ import { z } from 'zod';
 
 import { Paste } from '@/lib/models/Paste';
 import { generateSlug } from '@/lib/utils';
-import { connectDB } from '@/lib/db';
+import connectToDatabase from '@/lib/db';
+
 
 const createPasteSchema = z.object({
   content: z.string().min(1, 'Content is required'),
@@ -16,7 +17,7 @@ const createPasteSchema = z.object({
 // Handle POST request - Create a new paste
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    await connectToDatabase();
     
     const body = await request.json();
     
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
     });
     
     // Generate URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+    const baseUrl = process.env.MONGODB_URI|| request.nextUrl.origin;
     const url = `${baseUrl}/p/${paste.slug}`;
     
     return NextResponse.json(

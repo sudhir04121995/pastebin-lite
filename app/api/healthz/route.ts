@@ -1,12 +1,12 @@
 
-import { connectDB } from '@/lib/db';
+import connectToDatabase from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 
 export async function GET() {
   try {
     // Try to connect to MongoDB
-    await connectDB();
+    await connectToDatabase();
     
     return NextResponse.json(
       { ok: true },

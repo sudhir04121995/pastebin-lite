@@ -1,14 +1,15 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { Paste } from "@/lib/models/Paste";
-import { connectDB } from "@/lib/db";
+import connectToDatabase from "@/lib/db";
+
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await connectDB();
+    await connectToDatabase();
 
     const { id } = await params; // ✅ MUST await
     console.log("Fetching paste:", id);

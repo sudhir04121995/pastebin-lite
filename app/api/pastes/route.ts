@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/db";
 import { Paste } from "@/lib/models/Paste";
 import { nanoid } from "nanoid";
+import connectToDatabase from "@/lib/db";
 
 export async function POST(req: Request) {
-  await connectDB();
+  await connectToDatabase();
 
   const body = await req.json();
   const { content, ttl_seconds, max_views } = body;
@@ -29,6 +29,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     id: paste.slug,
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/p/${paste.slug}`,
+    url: `${process.env.MONGODB_URI}/p/${paste.slug}`,
   });
 }

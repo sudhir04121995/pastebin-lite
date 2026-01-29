@@ -4,7 +4,7 @@
 const nextConfig = {
   // Enable if using environment variables in browser
   env: {
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    MONGODB_URI: process.env.MONGODB_URI,
   },
 };
 
