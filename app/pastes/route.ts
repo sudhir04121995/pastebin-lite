@@ -14,6 +14,8 @@ const createPasteSchema = z.object({
   max_views: z.number().int().min(1).optional(),
 });
 
+
+
 // Handle POST request - Create a new paste
 export async function POST(request: NextRequest) {
   try {
@@ -57,7 +59,9 @@ export async function POST(request: NextRequest) {
     });
     
     // Generate URL
-    const baseUrl = process.env.MONGODB_URI|| request.nextUrl.origin;
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+   // const baseUrl = process.env.MONGODB_URI|| request.nextUrl.origin;
     const url = `${baseUrl}/p/${paste.slug}`;
     
     return NextResponse.json(

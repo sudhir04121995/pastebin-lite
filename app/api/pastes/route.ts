@@ -29,6 +29,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     id: paste.slug,
-    url: `${process.env.MONGODB_URI}/p/${paste.slug}`,
+    url: `${process.env.NEXT_PUBLIC_APP_URL}/p/${paste.slug}`,
   });
 }
